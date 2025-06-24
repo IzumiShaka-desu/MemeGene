@@ -40,7 +40,6 @@ export default function EditorPage() {
     const [textElements, setTextElements] = useState<TextElement[]>([]);
     const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
     const [dragState, setDragState] = useState<{ [key: string]: { startX: number, startY: number } }>({});
-    const [processedTextIds, setProcessedTextIds] = useState<Set<string>>(new Set());
     const [showTextEditor, setShowTextEditor] = useState(false);
     const [editingTextId, setEditingTextId] = useState<string | null>(null);
     const [imageElements, setImageElements] = useState<ImageElement[]>([]);
@@ -61,11 +60,6 @@ export default function EditorPage() {
     const viewShotRef = useRef<any>(null);
 
     // Refs to track current animated values for export
-    const currentTransformRef = useRef({
-        translateX: 0,
-        translateY: 0,
-        scale: 1,
-    });
 
     // Gesture state
     const gestureState = useRef({
@@ -490,7 +484,6 @@ export default function EditorPage() {
                                         const newHeight = Math.max(20, currentHeight + translationY);
 
                                         // Update the crop to reflect new size while maintaining aspect ratio
-                                        const aspectRatio = imageElement.width / imageElement.height;
                                         const scaledWidth = newWidth * 8;
                                         const scaledHeight = newHeight * 8;
 
