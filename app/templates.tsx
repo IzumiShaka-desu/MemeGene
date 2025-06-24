@@ -5,62 +5,18 @@ import React, { useState } from 'react';
 import {
     Image,
     ScrollView,
-    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ExploreTemplatesModal, Text } from '../src/components';
-import { borderRadius, colors, shadows, spacing } from '../src/constants/theme';
+import { MEME_TEMPLATES, colors, spacing } from '../src/constants';
 import { MemeTemplate } from '../src/types';
+import { styles } from './templates.styles';
 
-// Sample meme templates (in a real app, these would come from an API)
-const MEME_TEMPLATES: MemeTemplate[] = [
-    {
-        id: '1',
-        name: 'Drake Pointing',
-        imageUrl: 'https://i.imgflip.com/30b1gx.jpg',
-        width: 1200,
-        height: 1200,
-    },
-    {
-        id: '2',
-        name: 'Distracted Boyfriend',
-        imageUrl: 'https://i.imgflip.com/1ur9b0.jpg',
-        width: 1200,
-        height: 800,
-    },
-    {
-        id: '3',
-        name: 'Two Buttons',
-        imageUrl: 'https://i.imgflip.com/1g8my4.jpg',
-        width: 1200,
-        height: 908,
-    },
-    {
-        id: '4',
-        name: 'Change My Mind',
-        imageUrl: 'https://i.imgflip.com/24y43o.jpg',
-        width: 1200,
-        height: 900,
-    },
-    {
-        id: '5',
-        name: 'This Is Fine',
-        imageUrl: 'https://i.imgflip.com/26am.jpg',
-        width: 1200,
-        height: 675,
-    },
-    {
-        id: '6',
-        name: 'Woman Yelling at Cat',
-        imageUrl: 'https://i.imgflip.com/345v97.jpg',
-        width: 1200,
-        height: 438,
-    },
-];
 
-export default function TemplatesPage() {
+
+export const TemplatesPage: React.FC = () => {
     const insets = useSafeAreaInsets();
     const [showExploreModal, setShowExploreModal] = useState(false);
 
@@ -152,89 +108,7 @@ export default function TemplatesPage() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-    },
-    backButton: {
-        padding: spacing.xs,
-    },
-    headerTitle: {
-        flex: 1,
-        textAlign: 'center',
-    },
-    placeholder: {
-        width: 40, // Same as back button to center the title
-    },
-    scrollView: {
-        flex: 1,
-    },
-    scrollContent: {
-        padding: spacing.md,
-    },
-    grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        gap: spacing.md,
-    },
-    templateCard: {
-        width: '48%',
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.lg,
-        ...shadows.small,
-        overflow: 'hidden',
-    },
-    imageContainer: {
-        position: 'relative',
-        aspectRatio: 1,
-        backgroundColor: colors.border,
-    },
-    templateImage: {
-        width: '100%',
-        height: '100%',
-    },
-    overlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0,
-    },
-    templateInfo: {
-        padding: spacing.sm,
-    },
-    templateName: {
-        marginBottom: spacing.xs,
-    },
-    comingSoonSection: {
-        padding: spacing.lg,
-        alignItems: 'center',
-        marginTop: spacing.lg,
-    },
-    comingSoonTitle: {
-        marginBottom: spacing.sm,
-        textAlign: 'center',
-    },
-    comingSoonDesc: {
-        textAlign: 'center',
-        lineHeight: 20,
-    },
-    exploreButton: {
-        marginTop: spacing.md,
-    },
-}); 
+
+
+// Default export for Expo Router compatibility
+export default TemplatesPage; 

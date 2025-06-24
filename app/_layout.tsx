@@ -44,7 +44,7 @@ import {
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+export const RootLayout: React.FC = () => {
   const [fontsLoaded] = useFonts({
     // Custom fonts from assets
     'Anton': require('../assets/fonts/Anton-Regular.ttf'),
@@ -94,4 +94,7 @@ export default function RootLayout() {
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
-}
+};
+
+// Default export for Expo Router compatibility
+export default RootLayout;

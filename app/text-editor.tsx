@@ -7,67 +7,27 @@ import {
     Alert,
     Text as RNText,
     ScrollView,
-    StyleSheet,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../src/components';
-import { borderRadius, colors, spacing } from '../src/constants/theme';
+import {
+    BACKGROUND_COLORS,
+    DEFAULT_TEXT_STYLE,
+    FONT_FAMILIES,
+    FONT_SIZES,
+    TEXT_COLORS,
+    colors,
+    spacing
+} from '../src/constants';
+import { TextEditorProps, TextStyle } from '../src/types';
+import { styles } from './text-editor.styles';
 
-interface TextStyle {
-    fontSize: number;
-    fontFamily: string | undefined;
-    color: string;
-    backgroundColor: string;
-    textAlign: 'left' | 'center' | 'right';
-    fontWeight: 'normal' | 'bold';
-    textDecoration: 'none' | 'underline';
-    textTransform: 'none' | 'uppercase' | 'lowercase';
-}
 
-const FONT_FAMILIES = [
-    { name: 'System', value: undefined },
-    { name: 'Inter', value: 'Inter_400Regular' },           // Modern alternative to Helvetica
-    { name: 'Roboto', value: 'Roboto_400Regular' },         // Android's default, great alternative to Arial
-    { name: 'Open Sans', value: 'OpenSans_400Regular' },    // Clean alternative to Verdana
-    { name: 'Playfair', value: 'PlayfairDisplay_400Regular' }, // Elegant alternative to Times/Georgia
-    { name: 'Source Sans', value: 'SourceSansPro_400Regular' }, // Professional alternative
-    { name: 'Anton', value: 'Anton' },
-    { name: 'Bebas Neue', value: 'BebasNeue' },
-    { name: 'Fredoka One', value: 'FredokaOne' },
-    { name: 'Oswald', value: 'Oswald' },
-    { name: 'Righteous', value: 'Righteous' },
-    { name: 'Monospace', value: 'monospace' },
-    { name: 'Serif', value: 'serif' },
-    { name: 'Sans-Serif', value: 'sans-serif' },
-];
 
-const FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72, 84, 96];
-
-const TEXT_COLORS = [
-    '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
-    '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080',
-    '#FFC0CB', '#A52A2A', '#808080', '#000080', '#008000',
-];
-
-const BACKGROUND_COLORS = [
-    'transparent', '#000000', '#FFFFFF', '#FF0000', '#00FF00',
-    '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500',
-    '#800080', '#FFC0CB', '#A52A2A', '#808080', '#000080',
-];
-
-interface TextEditorProps {
-    // Modal props (optional - when used as modal)
-    onSave?: (textData: any) => void;
-    onCancel?: () => void;
-    isModal?: boolean;
-    canvasParams?: any;
-    editingText?: any; // Existing text data when editing
-}
-
-export default function TextEditorPage({ onSave, onCancel, isModal = false, canvasParams, editingText }: TextEditorProps = {}) {
+export const TextEditorPage: React.FC<TextEditorProps> = ({ onSave, onCancel, isModal = false, canvasParams, editingText }) => {
     const params = useLocalSearchParams();
     const insets = useSafeAreaInsets();
     const actualParams = canvasParams || params; // Use canvasParams when modal, params when standalone
@@ -75,32 +35,14 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
     // Initialize with existing text data if editing, otherwise use defaults
     const [text, setText] = useState(editingText?.text || 'Your Meme Text');
     const [opacity, setOpacity] = useState(editingText?.opacity || 1);
-    const [textStyle, setTextStyle] = useState<TextStyle>(editingText?.style || {
-        fontSize: 24,
-        fontFamily: undefined,
-        color: '#FFFFFF',
-        backgroundColor: 'transparent',
-        textAlign: 'center',
-        fontWeight: 'bold',
-        textDecoration: 'none',
-        textTransform: 'uppercase',
-    });
+    const [textStyle, setTextStyle] = useState<TextStyle>(editingText?.style || DEFAULT_TEXT_STYLE);
 
     // Update state when editingText changes (for editing mode)
     useEffect(() => {
         if (editingText) {
             setText(editingText.text || 'Your Meme Text');
             setOpacity(editingText.opacity || 1);
-            setTextStyle(editingText.style || {
-                fontSize: 24,
-                fontFamily: undefined,
-                color: '#FFFFFF',
-                backgroundColor: 'transparent',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                textDecoration: 'none',
-                textTransform: 'uppercase',
-            });
+            setTextStyle(editingText.style || DEFAULT_TEXT_STYLE);
         }
     }, [editingText]);
 
@@ -408,197 +350,7 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-    },
-    backButton: {
-        padding: spacing.xs,
-    },
-    headerTitle: {
-        flex: 1,
-        textAlign: 'center',
-    },
-    saveButton: {
-        padding: spacing.xs,
-    },
-    content: {
-        flex: 1,
-        padding: spacing.md,
-    },
-    scrollContent: {
-        padding: spacing.md,
-    },
-    previewSection: {
-        marginBottom: spacing.xl,
-    },
-    previewContainer: {
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.lg,
-        padding: spacing.xl,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 100,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    previewText: {
-        padding: spacing.sm,
-        borderRadius: borderRadius.sm,
-    },
-    section: {
-        marginBottom: spacing.xl,
-    },
-    sectionTitle: {
-        marginBottom: spacing.md,
-    },
-    textInput: {
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.md,
-        padding: spacing.md,
-        fontSize: 16,
-        color: colors.text,
-        borderWidth: 1,
-        borderColor: colors.border,
-        minHeight: 80,
-    },
-    fontGrid: {
-        flexDirection: 'row',
-        gap: spacing.sm,
-    },
-    fontOption: {
-        padding: spacing.sm,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.surface,
-        minWidth: 80,
-        alignItems: 'center',
-    },
-    selectedFontOption: {
-        borderColor: colors.primary,
-        backgroundColor: colors.background,
-    },
-    fontOptionText: {
-        fontSize: 14,
-    },
-    sizeGrid: {
-        flexDirection: 'row',
-        gap: spacing.sm,
-    },
-    sizeOption: {
-        width: 50,
-        height: 40,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.surface,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    selectedSizeOption: {
-        borderColor: colors.primary,
-        backgroundColor: colors.background,
-    },
-    colorGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: spacing.sm,
-    },
-    colorOption: {
-        width: 40,
-        height: 40,
-        borderRadius: borderRadius.md,
-        borderWidth: 2,
-        borderColor: colors.border,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    selectedColorOption: {
-        borderColor: colors.primary,
-        borderWidth: 3,
-    },
-    transparentOption: {
-        borderStyle: 'dashed',
-    },
-    alignmentGrid: {
-        flexDirection: 'row',
-        gap: spacing.md,
-    },
-    alignmentOption: {
-        flex: 1,
-        padding: spacing.md,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.surface,
-        alignItems: 'center',
-    },
-    selectedAlignmentOption: {
-        borderColor: colors.primary,
-        backgroundColor: colors.background,
-    },
-    alignmentLabel: {
-        marginTop: spacing.xs,
-    },
-    styleGrid: {
-        flexDirection: 'row',
-        gap: spacing.md,
-    },
-    styleOption: {
-        flex: 1,
-        padding: spacing.md,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.surface,
-        alignItems: 'center',
-    },
-    selectedStyleOption: {
-        borderColor: colors.primary,
-        backgroundColor: colors.background,
-    },
-    bottomPadding: {
-        height: spacing.xl,
-    },
-    sliderContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: spacing.md,
-    },
-    slider: {
-        flex: 1,
-        height: 40,
-    },
-    debugSection: {
-        marginBottom: spacing.xl,
-    },
-    debugContainer: {
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.lg,
-        padding: spacing.xl,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 100,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    debugTextContainer: {
-        marginBottom: spacing.md,
-    },
-    debugFontTest: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: spacing.md,
-    },
-}); 
+
+
+// Default export for Expo Router compatibility
+export default TextEditorPage; 

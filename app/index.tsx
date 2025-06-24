@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
@@ -9,10 +9,11 @@ import {
   CreationOptionsModal,
   Text
 } from '../src/components';
-import { colors, spacing } from '../src/constants/theme';
+import { colors } from '../src/constants';
 import { CanvasSettings, MemeCreationOption } from '../src/types';
+import { styles } from './index.styles';
 
-export default function Index() {
+export const Index: React.FC = () => {
   const [showCreationOptions, setShowCreationOptions] = useState(false);
   const [showCanvasSettings, setShowCanvasSettings] = useState(false);
   const insets = useSafeAreaInsets();
@@ -96,47 +97,7 @@ export default function Index() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-    justifyContent: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xxl,
-  },
-  title: {
-    color: colors.primary,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  subtitle: {
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  ctaSection: {
-    marginBottom: spacing.xxl,
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  featureCard: {
-    width: '48%',
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  featureTitle: {
-    marginBottom: spacing.xs,
-  },
-});
+
+
+// Default export for Expo Router compatibility
+export default Index;

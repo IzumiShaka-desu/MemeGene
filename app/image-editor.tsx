@@ -5,25 +5,21 @@ import React, { useState } from 'react';
 import {
     Alert,
     Image,
-    StyleSheet,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 
 import { Button } from '../src/components/atoms/Button';
 import { Text } from '../src/components/atoms/Text';
-import { borderRadius, colors, spacing } from '../src/constants/theme';
-import { ImageElement } from '../src/types';
+import { colors } from '../src/constants';
+import { ImageEditorProps, ImageElement } from '../src/types';
+import { styles } from './image-editor.styles';
 
 const PREVIEW_SIZE = 300;
 
-interface ImageEditorProps {
-    onClose: () => void;
-    onSave: (imageData: ImageElement) => void;
-    editingImage?: ImageElement | null;
-}
 
-export default function ImageEditor({ onClose, onSave, editingImage }: ImageEditorProps) {
+
+export const ImageEditor: React.FC<ImageEditorProps> = ({ onClose, onSave, editingImage }: ImageEditorProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(editingImage?.uri || null);
     const [opacity, setOpacity] = useState(editingImage?.opacity || 1);
 
@@ -148,92 +144,7 @@ export default function ImageEditor({ onClose, onSave, editingImage }: ImageEdit
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-    },
-    headerButton: {
-        padding: spacing.xs,
-        width: 40,
-        alignItems: 'center',
-    },
-    content: {
-        flex: 1,
-        padding: spacing.md,
-    },
-    emptyState: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    imagePicker: {
-        alignItems: 'center',
-        padding: spacing.xl,
-        borderRadius: borderRadius.lg,
-        borderWidth: 2,
-        borderColor: colors.border,
-        borderStyle: 'dashed',
-        backgroundColor: colors.surface,
-    },
-    pickerTitle: {
-        marginTop: spacing.md,
-        marginBottom: spacing.xs,
-    },
-    previewSection: {
-        marginBottom: spacing.lg,
-    },
-    sectionTitle: {
-        marginBottom: spacing.md,
-        fontWeight: '600',
-    },
-    previewContainer: {
-        width: PREVIEW_SIZE,
-        height: PREVIEW_SIZE,
-        alignSelf: 'center',
-        borderRadius: borderRadius.md,
-        overflow: 'hidden',
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    previewImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'contain',
-    },
-    previewActions: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: spacing.md,
-    },
-    actionButton: {
-        alignItems: 'center',
-        padding: spacing.sm,
-    },
-    controlSection: {
-        marginBottom: spacing.lg,
-    },
-    sliderContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.md,
-    },
-    slider: {
-        flex: 1,
-        height: 40,
-    },
-    saveSection: {
-        marginTop: 'auto',
-        paddingTop: spacing.lg,
-    },
-}); 
+
+
+// Default export for Expo Router compatibility
+export default ImageEditor; 

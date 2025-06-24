@@ -8,8 +8,8 @@ import {
     Animated,
     Image,
     Modal,
+    Platform,
     Text as RNText,
-    StyleSheet,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -22,15 +22,16 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ViewShot from 'react-native-view-shot';
 import { Text } from '../src/components';
-import { borderRadius, colors, spacing } from '../src/constants/theme';
+import { colors } from '../src/constants';
 import { ImageElement, TextElement } from '../src/types';
-import ImageEditor from './image-editor';
-import TextEditorPage from './text-editor';
+import { styles } from './editor.styles';
+import { ImageEditor } from './image-editor';
+import { TextEditorPage } from './text-editor';
 
 
 type EditorTool = 'canvas' | 'text' | 'image' | 'export';
 
-export default function EditorPage() {
+export const EditorPage: React.FC = () => {
     const params = useLocalSearchParams();
     const insets = useSafeAreaInsets();
     const [activeTool, setActiveTool] = useState<EditorTool>('canvas');
@@ -58,6 +59,7 @@ export default function EditorPage() {
     const pinchRef = useRef(null);
     const tapRef = useRef(null);
     const viewShotRef = useRef<any>(null);
+    const canvasRef = useRef<any>(null); // Regular ref for web canvas capture
 
     // Refs to track current animated values for export
 
@@ -382,10 +384,10 @@ export default function EditorPage() {
                 <Image
                     key="template"
                     source={{ uri: imageUrl }}
+                    resizeMode="cover"
                     style={{
                         width: '100%',
                         height: '100%',
-                        resizeMode: 'cover',
                     }}
                 />
             );
@@ -396,10 +398,10 @@ export default function EditorPage() {
                 <Image
                     key="gallery"
                     source={{ uri: imageUri }}
+                    resizeMode="cover"
                     style={{
                         width: '100%',
                         height: '100%',
-                        resizeMode: 'cover',
                     }}
                     onError={(error) => {
                         console.error('Error loading gallery image:', error);
@@ -463,11 +465,11 @@ export default function EditorPage() {
                     >
                         <Image
                             source={{ uri: imageElement.uri }}
+                            resizeMode="cover"
                             style={{
                                 width: (imageElement.width * imageElement.crop.width) / 8, // Scale down for canvas
                                 height: (imageElement.height * imageElement.crop.height) / 8,
                                 opacity: imageElement.opacity,
-                                resizeMode: 'cover',
                             }}
                         />
 
@@ -721,15 +723,17 @@ export default function EditorPage() {
         try {
             setIsExporting(true);
 
-            // First, check for media library permissions
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert(
-                    'Permission Required',
-                    'Please allow access to your photo library to save memes.',
-                    [{ text: 'OK' }]
-                );
-                return;
+            // Platform-specific permission check
+            if (Platform.OS !== 'web') {
+                const { status } = await MediaLibrary.requestPermissionsAsync();
+                if (status !== 'granted') {
+                    Alert.alert(
+                        'Permission Required',
+                        'Please allow access to your photo library to save memes.',
+                        [{ text: 'OK' }]
+                    );
+                    return;
+                }
             }
 
             // Store current state for restoration
@@ -756,18 +760,58 @@ export default function EditorPage() {
             // Wait a bit for animations to complete and state to update
             setTimeout(async () => {
                 try {
-                    if (!viewShotRef.current?.capture) {
-                        throw new Error('Canvas not ready for export');
+                    let uri: string;
+
+                    if (Platform.OS === 'web') {
+                        // Web: Use html2canvas for better compatibility
+                        if (typeof document !== 'undefined' && canvasRef.current) {
+                            // Import html2canvas dynamically
+                            const html2canvas = (await import('html2canvas')).default;
+
+                            const canvas = await html2canvas(canvasRef.current, {
+                                useCORS: true,
+                                allowTaint: true,
+                                width: canvasWidth / 4, // Actual display width
+                                height: canvasHeight / 4, // Actual display height
+                            });
+
+                            // Create a new canvas at full resolution
+                            const finalCanvas = document.createElement('canvas');
+                            finalCanvas.width = canvasWidth;
+                            finalCanvas.height = canvasHeight;
+                            const ctx = finalCanvas.getContext('2d');
+
+                            if (ctx) {
+                                // Fill background if needed
+                                if (creationType === 'blank') {
+                                    ctx.fillStyle = backgroundColor;
+                                    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                                }
+
+                                // Scale up the captured canvas to full resolution
+                                ctx.imageSmoothingEnabled = true;
+                                ctx.imageSmoothingQuality = 'high';
+                                ctx.drawImage(canvas, 0, 0, canvasWidth, canvasHeight);
+                            }
+
+                            uri = finalCanvas.toDataURL('image/png', 1.0);
+                        } else {
+                            throw new Error('Canvas element not available for web capture');
+                        }
+                    } else {
+                        // Mobile: Use ViewShot
+                        if (!viewShotRef.current?.capture) {
+                            throw new Error('Canvas not ready for export');
+                        }
+
+                        console.log('Capturing canvas at full size for export...');
+
+                        uri = await viewShotRef.current?.capture({
+                            format: 'png',
+                            quality: 1.0,
+                            result: 'tmpfile',
+                        });
                     }
-
-                    console.log('Capturing canvas at full size for export...');
-
-                    // Capture the canvas at full resolution
-                    const uri = await viewShotRef.current?.capture({
-                        format: 'png',
-                        quality: 1.0,
-                        result: 'tmpfile',
-                    });
 
                     if (!uri) {
                         throw new Error('Failed to capture canvas');
@@ -775,15 +819,37 @@ export default function EditorPage() {
 
                     console.log('Canvas captured successfully:', uri);
 
-                    // Save to photo library
-                    const asset = await MediaLibrary.createAssetAsync(uri);
-                    await MediaLibrary.createAlbumAsync('MemeGene', asset, false);
+                    // Platform-specific save logic
+                    if (Platform.OS === 'web') {
+                        // Web: Trigger browser download
+                        if (typeof document !== 'undefined') {
+                            const link = document.createElement('a');
+                            link.download = `meme-${Date.now()}.png`;
+                            link.href = uri;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
 
-                    Alert.alert(
-                        'Success!',
-                        'Your meme has been saved to your photo library at full resolution.',
-                        [{ text: 'OK' }]
-                    );
+                            Alert.alert(
+                                'Success!',
+                                'Your meme has been downloaded to your device.',
+                                [{ text: 'OK' }]
+                            );
+                        } else {
+                            throw new Error('Document not available for web download');
+                        }
+                    } else {
+                        // Mobile: Save to photo library
+                        const asset = await MediaLibrary.createAssetAsync(uri);
+                        await MediaLibrary.createAlbumAsync('MemeGene', asset, false);
+
+                        Alert.alert(
+                            'Success!',
+                            'Your meme has been saved to your photo library at full resolution.',
+                            [{ text: 'OK' }]
+                        );
+                    }
 
                     // Restore previous zoom and position state
                     translateX.setValue(previousTranslateX);
@@ -1242,6 +1308,7 @@ export default function EditorPage() {
                                             }}
                                         >
                                             <Animated.View
+                                                ref={canvasRef}
                                                 style={[
                                                     styles.canvas,
                                                     {
@@ -1340,97 +1407,7 @@ export default function EditorPage() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-    },
-    backButton: {
-        padding: spacing.xs,
-    },
-    headerCenter: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    headerActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.xs,
-    },
-    headerButton: {
-        padding: spacing.xs,
-        borderRadius: borderRadius.sm,
-        minWidth: 32,
-        alignItems: 'center',
-    },
-    divider: {
-        width: 1,
-        height: 20,
-        backgroundColor: colors.border,
-        marginHorizontal: spacing.xs,
-    },
-    disabledButton: {
-        opacity: 0.5,
-    },
-    editorContainer: {
-        flex: 1,
-        backgroundColor: colors.surface,
-    },
-    gestureContainer: {
-        flex: 1,
-    },
-    pinchContainer: {
-        flex: 1,
-    },
-    canvasContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    canvas: {
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: borderRadius.sm,
-        overflow: 'hidden',
-    },
-    canvasImage: {
-        width: '100%',
-        height: '100%',
-    },
-    toolbar: {
-        backgroundColor: colors.background,
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-        paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.md,
-    },
-    toolsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    toolButton: {
-        alignItems: 'center',
-        padding: spacing.sm,
-        borderRadius: borderRadius.md,
-        minWidth: 60,
-    },
-    activeToolButton: {
-        backgroundColor: colors.surface,
-    },
-    toolLabel: {
-        marginTop: spacing.xs,
-        fontSize: 12,
-    },
-    actionButton: {
-        padding: spacing.xs,
-    },
-}); 
+
+
+// Default export for Expo Router compatibility
+export default EditorPage; 
