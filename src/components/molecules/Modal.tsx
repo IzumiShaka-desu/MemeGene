@@ -1,11 +1,14 @@
 import React from 'react';
 import {
     Animated,
+    Dimensions,
     Modal as RNModal,
+    ScrollView,
     StyleSheet,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, colors, shadows, spacing } from '../../constants/theme';
 import { BaseComponentProps } from '../../types';
 
@@ -16,6 +19,8 @@ interface ModalProps extends BaseComponentProps {
     closeOnBackdrop?: boolean;
     size?: 'small' | 'medium' | 'large' | 'fullscreen';
 }
+
+const { height: screenHeight } = Dimensions.get('window');
 
 export const Modal: React.FC<ModalProps> = ({
     children,
@@ -28,6 +33,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
     const fadeAnim = React.useRef(new Animated.Value(0)).current;
     const scaleAnim = React.useRef(new Animated.Value(0.9)).current;
+    const insets = useSafeAreaInsets();
 
     React.useEffect(() => {
         if (visible) {
@@ -62,6 +68,9 @@ export const Modal: React.FC<ModalProps> = ({
     const modalStyle = [
         styles.modal,
         styles[size],
+        {
+            maxHeight: screenHeight - insets.top - insets.bottom - spacing.xl * 2,
+        },
         style,
     ];
 
@@ -73,7 +82,16 @@ export const Modal: React.FC<ModalProps> = ({
             statusBarTranslucent
             testID={testID}
         >
-            <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
+            <Animated.View
+                style={[
+                    styles.backdrop,
+                    {
+                        opacity: fadeAnim,
+                        paddingTop: insets.top + spacing.md,
+                        paddingBottom: insets.bottom + spacing.md,
+                    }
+                ]}
+            >
                 <TouchableWithoutFeedback onPress={closeOnBackdrop ? onClose : undefined}>
                     <View style={styles.backdropTouchable} />
                 </TouchableWithoutFeedback>
@@ -86,7 +104,13 @@ export const Modal: React.FC<ModalProps> = ({
                         },
                     ]}
                 >
-                    {children}
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
+                        contentContainerStyle={styles.scrollContent}
+                    >
+                        {children}
+                    </ScrollView>
                 </Animated.View>
             </Animated.View>
         </RNModal>
@@ -99,7 +123,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: spacing.md,
+        paddingHorizontal: spacing.md,
     },
     backdropTouchable: {
         position: 'absolute',
@@ -111,9 +135,12 @@ const styles = StyleSheet.create({
     modal: {
         backgroundColor: colors.background,
         borderRadius: borderRadius.xl,
-        padding: spacing.lg,
         ...shadows.large,
-        maxHeight: '80%',
+        overflow: 'hidden',
+    },
+    scrollContent: {
+        padding: spacing.lg,
+        flexGrow: 1,
     },
     small: {
         width: '80%',
@@ -131,6 +158,5 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         borderRadius: 0,
-        padding: 0,
     },
 }); 

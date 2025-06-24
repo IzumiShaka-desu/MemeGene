@@ -67,7 +67,7 @@ export const CreationOptionsModal: React.FC<CreationOptionsModalProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        paddingBottom: spacing.md,
+        // Remove paddingBottom since Modal handles padding
     },
     title: {
         textAlign: 'center',
