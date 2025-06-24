@@ -9,3 +9,5 @@ export { OptionCard } from './molecules/OptionCard';
 // Organisms
 export { CanvasSettingsModal } from './organisms/CanvasSettingsModal';
 export { CreationOptionsModal } from './organisms/CreationOptionsModal';
+export { ExploreTemplatesModal } from './organisms/ExploreTemplatesModal';
+
