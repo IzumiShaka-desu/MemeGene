@@ -30,9 +30,9 @@ export default function Index() {
         // Navigate to template selection (will implement next)
         router.push('/templates');
         break;
-      case 'upload':
+      case 'gallery':
         // Navigate to image picker (will implement next)
-        router.push('/upload');
+        router.push('/gallery');
         break;
     }
   };
@@ -76,45 +76,6 @@ export default function Index() {
             fullWidth
           />
         </View>
-
-        {/* Features Grid */}
-        <View style={styles.featuresGrid}>
-          <View style={styles.featureCard}>
-            <Text variant="h3" style={styles.featureTitle}>
-              🎨 Easy Editor
-            </Text>
-            <Text variant="caption" color={colors.textSecondary}>
-              Powerful editing tools with pan and zoom
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text variant="h3" style={styles.featureTitle}>
-              📱 Templates
-            </Text>
-            <Text variant="caption" color={colors.textSecondary}>
-              Popular meme templates ready to use
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text variant="h3" style={styles.featureTitle}>
-              📤 Export
-            </Text>
-            <Text variant="caption" color={colors.textSecondary}>
-              Save and share your creations
-            </Text>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Text variant="h3" style={styles.featureTitle}>
-              🖼️ Custom
-            </Text>
-            <Text variant="caption" color={colors.textSecondary}>
-              Upload your own images
-            </Text>
-          </View>
-        </View>
       </View>
 
       {/* Modals */}
@@ -141,11 +102,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: spacing.lg,
+    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
     marginBottom: spacing.xxl,
-    marginTop: spacing.xl,
   },
   title: {
     color: colors.primary,
