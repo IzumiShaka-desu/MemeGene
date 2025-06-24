@@ -28,11 +28,11 @@ const CREATION_OPTIONS: MemeCreationOption[] = [
         type: 'template',
     },
     {
-        id: 'upload',
-        title: 'Upload Your Image',
-        description: 'Use your own image as a meme template',
-        icon: 'cloud-upload-outline',
-        type: 'upload',
+        id: 'gallery',
+        title: 'Pick Image from Gallery',
+        description: 'Select an image from your photo library',
+        icon: 'images-outline',
+        type: 'gallery',
     },
 ];
 
