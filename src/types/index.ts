@@ -70,7 +70,7 @@ export interface MemeCreationOption {
     title: string;
     description: string;
     icon: string;
-    type: 'blank' | 'template' | 'upload';
+    type: 'blank' | 'template' | 'gallery';
 }
 
 export interface EditorElement {
@@ -82,6 +82,53 @@ export interface EditorElement {
     height: number;
     rotation: number;
     data: any;
+}
+
+export interface TextElement {
+    id: string;
+    text: string;
+    x?: number;
+    y?: number;
+    style: {
+        fontSize: number;
+        fontFamily: string;
+        color: string;
+        backgroundColor: string;
+        textAlign: 'left' | 'center' | 'right';
+        fontWeight: 'normal' | 'bold';
+        textDecoration: 'none' | 'underline';
+        textTransform: 'none' | 'uppercase' | 'lowercase';
+    };
+}
+
+export interface ImageElement {
+    id: string;
+    uri: string;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    opacity: number;
+    crop: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    originalDimensions: {
+        width: number;
+        height: number;
+    };
+}
+
+export interface ImageEditSettings {
+    opacity: number;
+    crop: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
 }
 
 export interface EditorState {
