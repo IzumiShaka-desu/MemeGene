@@ -100,6 +100,27 @@ export interface EditorElement {
     data: any;
 }
 
+// Text editor types
+export interface TextStyle {
+    fontSize: number;
+    fontFamily: string | undefined;
+    color: string;
+    backgroundColor: string;
+    textAlign: 'left' | 'center' | 'right';
+    fontWeight: 'normal' | 'bold';
+    textDecoration: 'none' | 'underline';
+    textTransform: 'none' | 'uppercase' | 'lowercase';
+}
+
+export interface TextEditorProps {
+    // Modal props (optional - when used as modal)
+    onSave?: (textData: any) => void;
+    onCancel?: () => void;
+    isModal?: boolean;
+    canvasParams?: any;
+    editingText?: any; // Existing text data when editing
+}
+
 export interface TextElement {
     id: string;
     text: string;
@@ -116,6 +137,13 @@ export interface TextElement {
         textDecoration: 'none' | 'underline';
         textTransform: 'none' | 'uppercase' | 'lowercase';
     };
+}
+
+// Image editor types
+export interface ImageEditorProps {
+    onClose: () => void;
+    onSave: (imageData: ImageElement) => void;
+    editingImage?: ImageElement | null;
 }
 
 export interface ImageElement {
