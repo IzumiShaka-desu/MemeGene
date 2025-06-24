@@ -1,17 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Text as RNText,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../src/components';
 import { borderRadius, colors, spacing } from '../src/constants/theme';
 
@@ -28,13 +29,16 @@ interface TextStyle {
 
 const FONT_FAMILIES = [
     { name: 'System', value: undefined },
-    { name: 'Helvetica', value: 'Helvetica' },
-    { name: 'Times', value: 'Times New Roman' },
-    { name: 'Courier', value: 'Courier New' },
-    { name: 'Arial', value: 'Arial' },
-    { name: 'Verdana', value: 'Verdana' },
-    { name: 'Georgia', value: 'Georgia' },
-    { name: 'Comic Sans', value: 'Comic Sans MS' },
+    { name: 'Inter', value: 'Inter_400Regular' },           // Modern alternative to Helvetica
+    { name: 'Roboto', value: 'Roboto_400Regular' },         // Android's default, great alternative to Arial
+    { name: 'Open Sans', value: 'OpenSans_400Regular' },    // Clean alternative to Verdana
+    { name: 'Playfair', value: 'PlayfairDisplay_400Regular' }, // Elegant alternative to Times/Georgia
+    { name: 'Source Sans', value: 'SourceSansPro_400Regular' }, // Professional alternative
+    { name: 'Anton', value: 'Anton' },
+    { name: 'Bebas Neue', value: 'BebasNeue' },
+    { name: 'Fredoka One', value: 'FredokaOne' },
+    { name: 'Oswald', value: 'Oswald' },
+    { name: 'Righteous', value: 'Righteous' },
     { name: 'Monospace', value: 'monospace' },
     { name: 'Serif', value: 'serif' },
     { name: 'Sans-Serif', value: 'sans-serif' },
@@ -65,10 +69,12 @@ interface TextEditorProps {
 
 export default function TextEditorPage({ onSave, onCancel, isModal = false, canvasParams, editingText }: TextEditorProps = {}) {
     const params = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
     const actualParams = canvasParams || params; // Use canvasParams when modal, params when standalone
 
     // Initialize with existing text data if editing, otherwise use defaults
     const [text, setText] = useState(editingText?.text || 'Your Meme Text');
+    const [opacity, setOpacity] = useState(editingText?.opacity || 1);
     const [textStyle, setTextStyle] = useState<TextStyle>(editingText?.style || {
         fontSize: 24,
         fontFamily: undefined,
@@ -84,6 +90,7 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
     useEffect(() => {
         if (editingText) {
             setText(editingText.text || 'Your Meme Text');
+            setOpacity(editingText.opacity || 1);
             setTextStyle(editingText.style || {
                 fontSize: 24,
                 fontFamily: undefined,
@@ -98,7 +105,12 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
     }, [editingText]);
 
     const updateTextStyle = (key: keyof TextStyle, value: any) => {
-        setTextStyle(prev => ({ ...prev, [key]: value }));
+        console.log(`🎨 Font Debug: Updating ${key} to:`, value);
+        setTextStyle(prev => {
+            const newStyle = { ...prev, [key]: value };
+            console.log('🎨 Font Debug: New text style:', newStyle);
+            return newStyle;
+        });
     };
 
     const handleSave = () => {
@@ -110,6 +122,7 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
         const textData = {
             text: text.trim(),
             style: textStyle,
+            opacity,
             id: Date.now().toString(),
             x: 50,
             y: 50,
@@ -177,11 +190,11 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+        <View style={styles.container}>
+            <StatusBar style="dark" translucent={false} />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: insets.top }]}>
                 <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
                     <Ionicons name={isModal ? "close" : "arrow-back"} size={24} color={colors.text} />
                 </TouchableOpacity>
@@ -195,13 +208,29 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
                 </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.content}
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + spacing.xl }]}
+                showsVerticalScrollIndicator={false}
+            >
                 {/* Text Preview */}
                 <View style={styles.previewSection}>
                     <Text variant="h3" style={styles.sectionTitle}>
                         Preview
                     </Text>
                     <View style={styles.previewContainer}>
+                        {/* <RNText style={{
+                            fontFamily: textStyle.fontFamily,
+                            fontSize: textStyle.fontSize,
+                            color: textStyle.color,
+                            backgroundColor: textStyle.backgroundColor,
+                            textTransform: textStyle.textTransform,
+                            textAlign: textStyle.textAlign,
+                            textDecorationLine: textStyle.textDecoration,
+                            flex: 1
+                        }}>
+                            {text || 'Your Meme Text'}
+                        </RNText> */}
                         <RNText
                             style={[
                                 styles.previewText,
@@ -211,16 +240,19 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
                                     color: textStyle.color,
                                     backgroundColor: textStyle.backgroundColor,
                                     textAlign: textStyle.textAlign,
-                                    fontWeight: textStyle.fontWeight,
+                                    // fontWeight: textStyle.fontWeight,
                                     textDecorationLine: textStyle.textDecoration,
                                     textTransform: textStyle.textTransform,
+                                    opacity,
                                 },
                             ]}
                         >
                             {text || 'Your Meme Text'}
                         </RNText>
+
                     </View>
                 </View>
+
 
                 {/* Text Input */}
                 <View style={styles.section}>
@@ -314,6 +346,26 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
                     onColorSelect={(color) => updateTextStyle('backgroundColor', color)}
                 />
 
+                {/* Opacity Control */}
+                <View style={styles.section}>
+                    <Text variant="h3" style={styles.sectionTitle}>
+                        Opacity: {Math.round(opacity * 100)}%
+                    </Text>
+                    <View style={styles.sliderContainer}>
+                        <Ionicons name="eye-off-outline" size={20} color={colors.textSecondary} />
+                        <Slider
+                            style={styles.slider}
+                            minimumValue={0.1}
+                            maximumValue={1}
+                            value={opacity}
+                            onValueChange={setOpacity}
+                            minimumTrackTintColor={colors.primary}
+                            maximumTrackTintColor={colors.border}
+                        />
+                        <Ionicons name="eye-outline" size={20} color={colors.textSecondary} />
+                    </View>
+                </View>
+
                 {/* Text Alignment */}
                 <View style={styles.section}>
                     <Text variant="h3" style={styles.sectionTitle}>
@@ -349,54 +401,10 @@ export default function TextEditorPage({ onSave, onCancel, isModal = false, canv
                     </View>
                 </View>
 
-                {/* Text Style Options */}
-                <View style={styles.section}>
-                    <Text variant="h3" style={styles.sectionTitle}>
-                        Text Style
-                    </Text>
-                    <View style={styles.styleGrid}>
-                        <TouchableOpacity
-                            style={[
-                                styles.styleOption,
-                                textStyle.fontWeight === 'bold' && styles.selectedStyleOption,
-                            ]}
-                            onPress={() => updateTextStyle('fontWeight', textStyle.fontWeight === 'bold' ? 'normal' : 'bold')}
-                        >
-                            <Ionicons
-                                name="text"
-                                size={20}
-                                color={textStyle.fontWeight === 'bold' ? colors.primary : colors.textSecondary}
-                            />
-                            <Text
-                                variant="caption"
-                                color={textStyle.fontWeight === 'bold' ? colors.primary : colors.textSecondary}
-                                weight="bold"
-                            >
-                                Bold
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.styleOption,
-                                textStyle.textTransform === 'uppercase' && styles.selectedStyleOption,
-                            ]}
-                            onPress={() => updateTextStyle('textTransform', textStyle.textTransform === 'uppercase' ? 'none' : 'uppercase')}
-                        >
-                            <Text
-                                variant="caption"
-                                color={textStyle.textTransform === 'uppercase' ? colors.primary : colors.textSecondary}
-                                weight="medium"
-                            >
-                                ABC
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
 
                 <View style={styles.bottomPadding} />
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -426,6 +434,9 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
+        padding: spacing.md,
+    },
+    scrollContent: {
         padding: spacing.md,
     },
     previewSection: {
@@ -559,5 +570,35 @@ const styles = StyleSheet.create({
     },
     bottomPadding: {
         height: spacing.xl,
+    },
+    sliderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.md,
+    },
+    slider: {
+        flex: 1,
+        height: 40,
+    },
+    debugSection: {
+        marginBottom: spacing.xl,
+    },
+    debugContainer: {
+        backgroundColor: colors.surface,
+        borderRadius: borderRadius.lg,
+        padding: spacing.xl,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 100,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    debugTextContainer: {
+        marginBottom: spacing.md,
+    },
+    debugFontTest: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.md,
     },
 }); 
