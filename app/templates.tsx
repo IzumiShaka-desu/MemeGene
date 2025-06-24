@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Image,
     ScrollView,
@@ -10,7 +10,7 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text } from '../src/components';
+import { Button, ExploreTemplatesModal, Text } from '../src/components';
 import { borderRadius, colors, shadows, spacing } from '../src/constants/theme';
 import { MemeTemplate } from '../src/types';
 
@@ -62,6 +62,7 @@ const MEME_TEMPLATES: MemeTemplate[] = [
 
 export default function TemplatesPage() {
     const insets = useSafeAreaInsets();
+    const [showExploreModal, setShowExploreModal] = useState(false);
 
     const handleTemplateSelect = (template: MemeTemplate) => {
         router.push({
@@ -128,13 +129,25 @@ export default function TemplatesPage() {
                 {/* Coming Soon Section */}
                 <View style={styles.comingSoonSection}>
                     <Text variant="h3" style={styles.comingSoonTitle}>
-                        More Templates Coming Soon!
+                        Want More Templates?
                     </Text>
                     <Text variant="caption" color={colors.textSecondary} style={styles.comingSoonDesc}>
-                        We&apos;re working on integrating trending meme templates from popular APIs
+                        Explore hundreds of trending meme templates from popular APIs
                     </Text>
+                    <Button
+                        title="Explore More Templates"
+                        onPress={() => setShowExploreModal(true)}
+                        variant="primary"
+                        style={styles.exploreButton}
+                    />
                 </View>
             </ScrollView>
+
+            {/* Explore Templates Modal */}
+            <ExploreTemplatesModal
+                visible={showExploreModal}
+                onClose={() => setShowExploreModal(false)}
+            />
         </View>
     );
 }
@@ -220,5 +233,8 @@ const styles = StyleSheet.create({
     comingSoonDesc: {
         textAlign: 'center',
         lineHeight: 20,
+    },
+    exploreButton: {
+        marginTop: spacing.md,
     },
 }); 
