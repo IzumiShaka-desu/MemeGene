@@ -89,6 +89,7 @@ export interface TextElement {
     text: string;
     x?: number;
     y?: number;
+    opacity?: number;
     style: {
         fontSize: number;
         fontFamily: string;
