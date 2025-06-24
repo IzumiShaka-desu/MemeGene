@@ -2,10 +2,10 @@ import React from 'react';
 import {
     Animated,
     Dimensions,
+    Pressable,
     Modal as RNModal,
     ScrollView,
     StyleSheet,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -92,9 +92,9 @@ export const Modal: React.FC<ModalProps> = ({
                     }
                 ]}
             >
-                <TouchableWithoutFeedback onPress={closeOnBackdrop ? onClose : undefined}>
+                <Pressable onPress={closeOnBackdrop ? onClose : undefined}>
                     <View style={styles.backdropTouchable} />
-                </TouchableWithoutFeedback>
+                </Pressable>
                 <Animated.View
                     style={[
                         modalStyle,
