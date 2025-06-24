@@ -65,6 +65,22 @@ export interface MemeTemplate {
     height: number;
 }
 
+export interface ApiMemeTemplate {
+    id: string;
+    name: string;
+    lines: number;
+    overlays: number;
+    styles: string[];
+    blank: string;
+    example: {
+        text: string[];
+        url: string;
+    };
+    source: string;
+    keywords: string[];
+    _self: string;
+}
+
 export interface MemeCreationOption {
     id: string;
     title: string;
