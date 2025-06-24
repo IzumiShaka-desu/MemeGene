@@ -8,10 +8,10 @@ import {
     Dimensions,
     FlatList,
     Image,
+    Pressable,
     Modal as RNModal,
     StyleSheet,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -171,9 +171,9 @@ export const ExploreTemplatesModal: React.FC<ExploreTemplatesModalProps> = ({
                     }
                 ]}
             >
-                <TouchableWithoutFeedback onPress={onClose}>
+                <Pressable onPress={onClose}>
                     <View style={styles.backdropTouchable} />
-                </TouchableWithoutFeedback>
+                </Pressable>
 
                 <View style={styles.modalContainer}>
                     {/* Header */}
