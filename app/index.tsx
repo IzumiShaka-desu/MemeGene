@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
   CanvasSettingsModal,
@@ -14,6 +15,7 @@ import { CanvasSettings, MemeCreationOption } from '../src/types';
 export default function Index() {
   const [showCreationOptions, setShowCreationOptions] = useState(false);
   const [showCanvasSettings, setShowCanvasSettings] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleCreateMeme = () => {
     setShowCreationOptions(true);
@@ -52,8 +54,8 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <StatusBar style="dark" translucent={false} />
 
       <View style={styles.content}>
         {/* Header */}
@@ -90,7 +92,7 @@ export default function Index() {
         onClose={() => setShowCanvasSettings(false)}
         onConfirm={handleCanvasConfirm}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

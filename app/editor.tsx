@@ -9,7 +9,6 @@ import {
     Image,
     Modal,
     Text as RNText,
-    SafeAreaView,
     StyleSheet,
     TouchableOpacity,
     View
@@ -20,6 +19,7 @@ import {
     State,
     TapGestureHandler,
 } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ViewShot from 'react-native-view-shot';
 import { Text } from '../src/components';
 import { borderRadius, colors, spacing } from '../src/constants/theme';
@@ -32,6 +32,7 @@ type EditorTool = 'canvas' | 'text' | 'image' | 'export';
 
 export default function EditorPage() {
     const params = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
     const [activeTool, setActiveTool] = useState<EditorTool>('canvas');
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
@@ -58,6 +59,13 @@ export default function EditorPage() {
     const pinchRef = useRef(null);
     const tapRef = useRef(null);
     const viewShotRef = useRef<any>(null);
+
+    // Refs to track current animated values for export
+    const currentTransformRef = useRef({
+        translateX: 0,
+        translateY: 0,
+        scale: 1,
+    });
 
     // Gesture state
     const gestureState = useRef({
@@ -355,7 +363,17 @@ export default function EditorPage() {
     const backgroundColor = (params.backgroundColor as string) || '#FFFFFF';
     const creationType = params.type as string;
     const imageUrl = params.imageUrl as string; // For templates
-    const imageUri = params.imageUri as string; // For gallery images
+    const imageUri = params.imageUri as string; // For gallery images (optimized URI)
+
+    // Debug log for gallery images
+    if (creationType === 'gallery') {
+        console.log('Editor received gallery parameters:', {
+            creationType,
+            hasImageUri: !!imageUri,
+            canvasWidth,
+            canvasHeight
+        });
+    }
 
     // Determine what to show in canvas with proper layering: canvas->images->text
     const getCanvasContent = () => {
@@ -378,6 +396,8 @@ export default function EditorPage() {
                 />
             );
         } else if (creationType === 'gallery' && imageUri) {
+            console.log('Rendering gallery image with optimized URI');
+
             elements.push(
                 <Image
                     key="gallery"
@@ -386,6 +406,12 @@ export default function EditorPage() {
                         width: '100%',
                         height: '100%',
                         resizeMode: 'cover',
+                    }}
+                    onError={(error) => {
+                        console.error('Error loading gallery image:', error);
+                    }}
+                    onLoad={() => {
+                        console.log('Gallery image loaded successfully');
                     }}
                 />
             );
@@ -677,9 +703,10 @@ export default function EditorPage() {
                                 color: textElement.style.color || '#FFFFFF',
                                 backgroundColor: textElement.style.backgroundColor,
                                 textAlign: textElement.style.textAlign,
-                                fontWeight: textElement.style.fontWeight,
+                                // fontWeight: textElement.style.fontWeight,
                                 textDecorationLine: textElement.style.textDecoration,
                                 textTransform: textElement.style.textTransform,
+                                opacity: textElement.opacity || 1,
                                 paddingHorizontal: 8,
                                 paddingVertical: 4,
                             }}
@@ -712,25 +739,48 @@ export default function EditorPage() {
                 return;
             }
 
-            // Clear selections before export to avoid selection borders
+            // Store current state for restoration
             const previousTextSelection = selectedTextId;
             const previousImageSelection = selectedImageId;
+            const previousTranslateX = gestureState.current.translateX;
+            const previousTranslateY = gestureState.current.translateY;
+            const previousScale = gestureState.current.scale;
+
+            // Clear selections before export to avoid selection borders
             setSelectedTextId(null);
             setSelectedImageId(null);
 
-            // Wait a bit for state to update
+            // Reset zoom and position for export to capture full canvas
+            translateX.setValue(0);
+            translateY.setValue(0);
+            scale.setValue(1);
+
+            // Update gesture state to match reset values
+            gestureState.current.translateX = 0;
+            gestureState.current.translateY = 0;
+            gestureState.current.scale = 1;
+
+            // Wait a bit for animations to complete and state to update
             setTimeout(async () => {
                 try {
                     if (!viewShotRef.current?.capture) {
                         throw new Error('Canvas not ready for export');
                     }
 
-                    // Capture the canvas
-                    const uri = await viewShotRef.current?.capture();
+                    console.log('Capturing canvas at full size for export...');
+
+                    // Capture the canvas at full resolution
+                    const uri = await viewShotRef.current?.capture({
+                        format: 'png',
+                        quality: 1.0,
+                        result: 'tmpfile',
+                    });
 
                     if (!uri) {
                         throw new Error('Failed to capture canvas');
                     }
+
+                    console.log('Canvas captured successfully:', uri);
 
                     // Save to photo library
                     const asset = await MediaLibrary.createAssetAsync(uri);
@@ -738,13 +788,24 @@ export default function EditorPage() {
 
                     Alert.alert(
                         'Success!',
-                        'Your meme has been saved to your photo library.',
+                        'Your meme has been saved to your photo library at full resolution.',
                         [{ text: 'OK' }]
                     );
+
+                    // Restore previous zoom and position state
+                    translateX.setValue(previousTranslateX);
+                    translateY.setValue(previousTranslateY);
+                    scale.setValue(previousScale);
+
+                    // Restore gesture state
+                    gestureState.current.translateX = previousTranslateX;
+                    gestureState.current.translateY = previousTranslateY;
+                    gestureState.current.scale = previousScale;
 
                     // Restore previous selections
                     setSelectedTextId(previousTextSelection);
                     setSelectedImageId(previousImageSelection);
+
                 } catch (error) {
                     console.error('Export error:', error);
                     Alert.alert(
@@ -753,11 +814,22 @@ export default function EditorPage() {
                         [{ text: 'OK' }]
                     );
 
+                    // Restore previous zoom and position state even on error
+                    translateX.setValue(previousTranslateX);
+                    translateY.setValue(previousTranslateY);
+                    scale.setValue(previousScale);
+
+                    // Restore gesture state
+                    gestureState.current.translateX = previousTranslateX;
+                    gestureState.current.translateY = previousTranslateY;
+                    gestureState.current.scale = previousScale;
+
                     // Restore previous selections
                     setSelectedTextId(previousTextSelection);
                     setSelectedImageId(previousImageSelection);
                 }
-            }, 100);
+            }, 200); // Slightly longer delay to ensure animations complete
+
         } catch (error) {
             console.error('Export permission error:', error);
             Alert.alert(
@@ -1064,11 +1136,11 @@ export default function EditorPage() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+        <View style={styles.container}>
+            <StatusBar style="dark" translucent={false} />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: insets.top }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
@@ -1271,7 +1343,7 @@ export default function EditorPage() {
                     editingImage={editingImageId ? imageElements.find(el => el.id === editingImageId) : null}
                 />
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 

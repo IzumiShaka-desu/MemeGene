@@ -4,12 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import {
     Image,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../src/components';
 import { borderRadius, colors, shadows, spacing } from '../src/constants/theme';
 import { MemeTemplate } from '../src/types';
@@ -61,6 +61,8 @@ const MEME_TEMPLATES: MemeTemplate[] = [
 ];
 
 export default function TemplatesPage() {
+    const insets = useSafeAreaInsets();
+
     const handleTemplateSelect = (template: MemeTemplate) => {
         router.push({
             pathname: '/editor',
@@ -75,11 +77,11 @@ export default function TemplatesPage() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+        <View style={styles.container}>
+            <StatusBar style="dark" translucent={false} />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: insets.top }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
@@ -90,13 +92,18 @@ export default function TemplatesPage() {
             </View>
 
             {/* Templates Grid */}
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + spacing.xl }]}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.grid}>
                     {MEME_TEMPLATES.map((template) => (
                         <TouchableOpacity
                             key={template.id}
                             style={styles.templateCard}
                             onPress={() => handleTemplateSelect(template)}
+                            activeOpacity={0.8}
                         >
                             <View style={styles.imageContainer}>
                                 <Image
@@ -104,9 +111,7 @@ export default function TemplatesPage() {
                                     style={styles.templateImage}
                                     resizeMode="cover"
                                 />
-                                <View style={styles.overlay}>
-                                    <Ionicons name="play-circle" size={40} color="rgba(255, 255, 255, 0.9)" />
-                                </View>
+                                <View style={styles.overlay} />
                             </View>
                             <View style={styles.templateInfo}>
                                 <Text variant="body" weight="medium" style={styles.templateName}>
@@ -130,7 +135,7 @@ export default function TemplatesPage() {
                     </Text>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -161,8 +166,10 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
     },
-    grid: {
+    scrollContent: {
         padding: spacing.md,
+    },
+    grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
